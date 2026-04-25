@@ -1,0 +1,106 @@
+@model PlataformaCreditos.Models.SolicitudCredito
+
+@{
+    ViewData["Title"] = "Detalles de Solicitud";
+    var montoMaximo = (Model.Cliente?.IngresosMensuales ?? 0) * 5;
+    var puedeAprobar = Model.Estado == PlataformaCreditos.Models.EstadoSolicitud.Pendiente 
+        && Model.MontoSolicitado <= montoMaximo;
+}
+
+<h1>Detalles de Solicitud #@Model.Id</h1>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <dl class="row">
+            <dt class="col-sm-4">Cliente:</dt>
+            <dd class="col-sm-8">@Model.Cliente?.Usuario?.UserName</dd>
+            
+            <dt class="col-sm-4">Ingresos Mensuales:</dt>
+            <dd class="col-sm-8">@Model.Cliente?.IngresosMensuales.ToString("C")</dd>
+            
+            <dt class="col-sm-4">Monto Solicitado:</dt>
+            <dd class="col-sm-8">@Model.MontoSolicitado.ToString("C")</dd>
+            
+            <dt class="col-sm-4">Monto Máximo:</dt>
+            <dd class="col-sm-8">@montoMaximo.ToString("C")</dd>
+            
+            <dt class="col-sm-4">Fecha:</dt>
+            <dd class="col-sm-8">@Model.FechaSolicitud.ToString("dd/MM/yyyy HH:mm")</dd>
+            
+            <dt class="col-sm-4">Estado:</dt>
+            <dd class="col-sm-8">
+                @switch (Model.Estado)
+                {
+                    case PlataformaCreditos.Models.EstadoSolicitud.Pendiente:
+                        <span class="badge bg-warning">Pendiente</span>
+                        break;
+                    case PlataformaCreditos.Models.EstadoSolicitud.Aprobado:
+                        <span class="badge bg-success">Aprobado</span>
+                        break;
+                    case PlataformaCreditos.Models.EstadoSolicitud.Rechazado:
+                        <span class="badge bg-danger">Rechazado</span>
+                        break;
+                }
+            </dd>
+            
+            @if (!string.IsNullOrEmpty(Model.MotivoRechazo))
+            {
+                <dt class="col-sm-4">Motivo de Rechazo:</dt>
+                <dd class="col-sm-8">@Model.MotivoRechazo</dd>
+            }
+        </dl>
+    </div>
+</div>
+
+@if (Model.Estado == PlataformaCreditos.Models.EstadoSolicitud.Pendiente)
+{
+    <hr />
+    <h3>Acciones</h3>
+    
+    @if (puedeAprobar)
+    {
+        <form asp-action="Aprobar" asp-route-id="@Model.Id" method="post" style="display:inline;">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-success" onclick="return confirm('¿Está seguro que desea aprobar esta solicitud?');">
+                Aprobar Solicitud
+            </button>
+        </form>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            <strong>No se puede aprobar:</strong> El monto solicitado (@Model.MontoSolicitado.ToString("C")) excede el límite permitido (@montoMaximo.ToString("C") = 5 veces los ingresos).
+        </div>
+    }
+    
+    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rechazarModal">
+        Rechazar Solicitud
+    </button>
+    
+    <!-- Modal de Rechazo -->
+    <div class="modal fade" id="rechazarModal" tabindex="-1" aria-labelledby="rechazarModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rechazarModalLabel">Rechazar Solicitud</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form asp-action="Rechazar" asp-route-id="@Model.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="motivo" class="form-label">Motivo del rechazo:</label>
+                            <textarea class="form-control" id="motivo" name="motivo" rows="4" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-danger">Confirmar Rechazo</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+<a asp-action="Index" class="btn btn-secondary">Volver a la Lista</a>

@@ -1,0 +1,29 @@
+@model PlataformaCreditos.Models.Cliente
+
+@{
+    ViewData["Title"] = "Crear Perfil de Cliente";
+}
+
+<h1>Crear Perfil de Cliente</h1>
+
+<p>Para poder solicitar un crédito, primero debes crear tu perfil de cliente.</p>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="CrearPerfil">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group mb-3">
+                <label asp-for="IngresosMensuales" class="control-label"></label>
+                <input asp-for="IngresosMensuales" class="form-control" />
+                <span asp-validation-for="IngresosMensuales" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Crear Perfil" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

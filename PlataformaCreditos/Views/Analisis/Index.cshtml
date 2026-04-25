@@ -1,0 +1,67 @@
+@model IEnumerable<PlataformaCreditos.Models.SolicitudCredito>
+
+@{
+    ViewData["Title"] = "Análisis de Solicitudes";
+}
+
+<h1>Análisis de Solicitudes de Crédito</h1>
+
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-success">@TempData["Mensaje"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<!-- Filtros -->
+<div class="mb-3">
+    <a asp-action="Index" class="btn btn-outline-primary btn-sm">Todas</a>
+    <a asp-action="Index" asp-route-estado="Pendiente" class="btn btn-outline-warning btn-sm">Pendientes</a>
+    <a asp-action="Index" asp-route-estado="Aprobado" class="btn btn-outline-success btn-sm">Aprobadas</a>
+    <a asp-action="Index" asp-route-estado="Rechazado" class="btn btn-outline-danger btn-sm">Rechazadas</a>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Ingresos</th>
+            <th>Monto</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>@item.Id</td>
+            <td>@item.Cliente?.Usuario?.UserName</td>
+            <td>@item.Cliente?.IngresosMensuales.ToString("C")</td>
+            <td>@item.MontoSolicitado.ToString("C")</td>
+            <td>@item.FechaSolicitud.ToString("dd/MM/yyyy HH:mm")</td>
+            <td>
+                @switch (item.Estado)
+                {
+                    case PlataformaCreditos.Models.EstadoSolicitud.Pendiente:
+                        <span class="badge bg-warning">Pendiente</span>
+                        break;
+                    case PlataformaCreditos.Models.EstadoSolicitud.Aprobado:
+                        <span class="badge bg-success">Aprobado</span>
+                        break;
+                    case PlataformaCreditos.Models.EstadoSolicitud.Rechazado:
+                        <span class="badge bg-danger">Rechazado</span>
+                        break;
+                }
+            </td>
+            <td>
+                <a asp-action="Detalles" asp-route-id="@item.Id" class="btn btn-sm btn-info">Ver</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
